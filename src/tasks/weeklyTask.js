@@ -28,7 +28,7 @@ function buildActionRows(weekId, activeDays, disabled = false) {
     .setDisabled(disabled);
 
   const rows = [];
-  // Max 5 buttons per row
+  // Max 4 buttons per row
   for (let i = 0; i < dayButtons.length; i += 4) {
     rows.push(new ActionRowBuilder().addComponents(dayButtons.slice(i, i + 4)));
   }
@@ -55,8 +55,8 @@ async function publishResults(guild, week) {
     }
   }
 
-  closeWeek(week.id);
   await channel.send({ embeds: [embed] });
+  closeWeek(week.id);
 }
 
 async function checkCompletion(guild, week) {
@@ -66,6 +66,7 @@ async function checkCompletion(guild, week) {
   const role = await guild.roles.fetch(config.role_id).catch(() => null);
   if (!role) return;
 
+  await guild.members.fetch().catch(() => null);
   const memberCount = role.members.size;
   const confirmedCount = getConfirmationCount(week.id);
 
@@ -96,6 +97,7 @@ async function startWeek(guild) {
   if (!channel) return '❌ Channel introuvable. Reconfigure avec `/config channel`.';
 
   const role = await guild.roles.fetch(config.role_id).catch(() => null);
+  if (role) await guild.members.fetch().catch(() => null);
   const pendingMentions = role ? role.members.map(m => `<@${m.id}>`) : [];
 
   const embed = buildCollectEmbed(week, config, pendingMentions, []);

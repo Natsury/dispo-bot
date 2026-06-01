@@ -55,6 +55,7 @@ async function handleButton(interaction) {
       const confirmedIds = getConfirmedUserIds(weekId);
 
       const role = config?.role_id ? await guild.roles.fetch(config.role_id).catch(() => null) : null;
+      if (role) await guild.members.fetch().catch(() => null);
       const pendingMentions = role
         ? role.members.filter(m => !confirmedIds.includes(m.id)).map(m => `<@${m.id}>`)
         : [];
