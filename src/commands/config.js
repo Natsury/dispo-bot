@@ -57,10 +57,13 @@ module.exports = {
       changes.push(`Channel : <#${channel.id}>`);
     }
     if (jours) {
-      const parsed = jours.split(',').map(s => DAY_MAP[s.trim().toLowerCase()]).filter(Boolean);
+      const tokens = jours.split(',').map(s => s.trim().toLowerCase());
+      const parsed = tokens.map(s => DAY_MAP[s]).filter(Boolean);
+      const unknown = tokens.filter(s => !DAY_MAP[s]);
       if (parsed.length === 0) return interaction.reply({ content: '❌ Jours invalides. Ex: `lun,mar,jeu`', flags: MessageFlags.Ephemeral });
       fields.active_days = JSON.stringify(parsed);
-      changes.push(`Jours : ${parsed.join(', ')}`);
+      const warnDays = unknown.length > 0 ? ` ⚠️ Ignorés : ${unknown.join(', ')}` : '';
+      changes.push(`Jours : ${parsed.join(', ')}${warnDays}`);
     }
     if (deadline !== null) {
       fields.deadline_hours = deadline;

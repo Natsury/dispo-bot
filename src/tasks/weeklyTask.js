@@ -81,7 +81,7 @@ async function startWeek(guild) {
 
   const weekStart = nextMonday();
   const deadlineAt = new Date();
-  deadlineAt.setHours(deadlineAt.getHours() + config.deadline_hours);
+  deadlineAt.setUTCHours(deadlineAt.getUTCHours() + config.deadline_hours);
 
   const result = createWeek(guild.id, weekStart, deadlineAt.toISOString());
   if (result.changes === 0) {
@@ -93,7 +93,7 @@ async function startWeek(guild) {
 
   const week = getWeek(guild.id, weekStart);
   const channel = await guild.channels.fetch(config.channel_id).catch(() => null);
-  if (!channel) return;
+  if (!channel) return '❌ Channel introuvable. Reconfigure avec `/config channel`.';
 
   const role = await guild.roles.fetch(config.role_id).catch(() => null);
   const pendingMentions = role ? role.members.map(m => `<@${m.id}>`) : [];
