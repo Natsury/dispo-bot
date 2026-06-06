@@ -20,7 +20,7 @@ function formatWeekRange(weekStart) {
 
 function buildCollectEmbed(week, config, pendingMentions, dayCounts) {
   const countMap = Object.fromEntries(dayCounts.map(r => [r.day, r.count]));
-  const activeDays = JSON.parse(typeof config.active_days === 'string' ? config.active_days : JSON.stringify(config.active_days));
+  const activeDays = config.active_days;
   const deadline = new Date(week.deadline_at);
   const deadlineStr = deadline.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
 

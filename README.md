@@ -9,6 +9,50 @@ Bot Discord de collecte hebdomadaire des disponibilités. Poste automatiquement 
 3. Chaque membre confirme ses choix via le bouton **✔️ Confirmer mes disponibilités**.
 4. Dès que tous ont confirmé **ou** que la deadline est atteinte, les résultats sont publiés automatiquement.
 
+```mermaid
+flowchart TD
+    Trigger(["⏰ Cron sam/dim 9h<br/>ou /resultats demarrer"]) --> SW[startWeek]
+    SW --> Open[/"📋 Collecte ouverte"/]
+
+    Open --> Vote[Vote par bouton]
+    Vote --> Confirm[Confirmation]
+    Confirm --> Check{"Tous<br/>confirmés ?"}
+    Check -->|Non| Vote
+
+    Check -->|Oui| Pub[publishResults]
+    Deadline(["⏱️ Deadline atteinte<br/>ou /resultats publier"]) --> Pub
+
+    Pub --> Closed[/"📊 Résultats publiés<br/>semaine clôturée"/]
+    Closed --> Trigger
+```
+
+```mermaid
+flowchart TD
+    Clic([Clic bouton]) --> D1{dispo ou confirm ?}
+
+    subgraph dispo ["🗓️ dispo : weekId : day"]
+        V1{"Semaine ouverte ?"} -->|Non| E1[❌ Collecte terminée]
+        V1 -->|Oui| V2{"A le rôle ?"}
+        V2 -->|Non| E2[❌ Accès refusé]
+        V2 -->|Oui| T[toggleAvailability]
+        T --> R1["✅ / ❌ Jour sélectionné / retiré"]
+    end
+
+    subgraph confirm ["✔️ confirm : weekId"]
+        V3{"Semaine ouverte ?"} -->|Non| E3[❌ Collecte terminée]
+        V3 -->|Oui| V4{"A le rôle ?"}
+        V4 -->|Non| E4[❌ Accès refusé]
+        V4 -->|Oui| C[confirmUser]
+        C --> R2[Jours confirmés]
+        C --> Check{"Tous confirmés ?"}
+        Check -->|Oui| Pub[publishResults]
+        Check -->|Non| Wait([Attendre prochain cron])
+    end
+
+    D1 -->|dispo| V1
+    D1 -->|confirm| V3
+```
+
 ## Prérequis système
 
 - **Node.js v22+**
@@ -68,7 +112,10 @@ pnpm run deploy
 ### 5. Lancer le bot
 
 ```bash
-# Développement
+# Développement (hot-reload)
+pnpm run dev
+
+# Production sans PM2
 pnpm start
 
 # Production (PM2)
@@ -120,6 +167,41 @@ SQLite (`data/bot.db`), créée automatiquement au démarrage.
 | `weeks` | Semaines de collecte (dates, deadline, statut) |
 | `availability` | Réponses par membre et par jour |
 | `confirmations` | Confirmations finales par membre |
+
+```mermaid
+erDiagram
+    guild_config {
+        TEXT guild_id PK
+        TEXT role_id
+        TEXT channel_id
+        TEXT active_days
+        INTEGER deadline_hours
+        TEXT cron_day
+    }
+    weeks {
+        INTEGER id PK
+        TEXT guild_id FK
+        TEXT week_start
+        TEXT deadline_at
+        TEXT closed_at
+        TEXT message_id
+    }
+    availability {
+        INTEGER id PK
+        INTEGER week_id FK
+        TEXT user_id
+        TEXT day
+        INTEGER available
+    }
+    confirmations {
+        INTEGER week_id FK
+        TEXT user_id
+        TEXT confirmed_at
+    }
+    guild_config ||--o{ weeks : "possède"
+    weeks ||--o{ availability : "contient"
+    weeks ||--o{ confirmations : "reçoit"
+```
 
 ## Structure du projet
 

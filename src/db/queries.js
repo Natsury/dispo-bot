@@ -139,20 +139,10 @@ function getExpiredWeeks() {
   `).all();
 }
 
-function getPartialResults(weekId) {
-  return db.prepare(`
-    SELECT day, COUNT(user_id) as count
-    FROM availability
-    WHERE week_id = ? AND available = 1
-    GROUP BY day
-    ORDER BY count DESC
-  `).all(weekId);
-}
-
 module.exports = {
   getConfig, setConfig,
   createWeek, getWeek, getOpenWeek, getLastWeek, setWeekMessageId, closeWeek,
   toggleAvailability, getDayCounts,
   confirmUser, getConfirmedUserIds, getConfirmationCount, getUserDays,
-  getResults, getPartialResults, getExpiredWeeks, getVotesByDay,
+  getResults, getExpiredWeeks, getVotesByDay,
 };

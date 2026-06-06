@@ -14,7 +14,14 @@ function loadCommands() {
 async function handleCommand(interaction) {
   const cmd = commands.get(interaction.commandName);
   if (!cmd) return;
-  await cmd.execute(interaction);
+  try {
+    await cmd.execute(interaction);
+  } catch (err) {
+    console.error(`Erreur commande ${interaction.commandName}:`, err);
+    const reply = { content: '❌ Une erreur est survenue.', flags: 64 };
+    if (interaction.replied || interaction.deferred) await interaction.followUp(reply).catch(() => null);
+    else await interaction.reply(reply).catch(() => null);
+  }
 }
 
 module.exports = { loadCommands, handleCommand };
